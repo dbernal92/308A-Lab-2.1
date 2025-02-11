@@ -34,7 +34,7 @@ adventurer.companion.companion = {
 
 console.log(adventurer.companion.companion);
 
-adventurer.roll = function(mod = 0) {
+adventurer.roll = function (mod = 0) {
     const result = Math.floor(Math.random() * 20) + 1 + mod;
     console.log(`${this.name} rolled a ${result}.`);
 };
@@ -44,14 +44,14 @@ adventurer.roll();
 // Part 2: Class Fantasy
 // Character class defines generic character entities
 class Character {
-    constructor (name) {
+    constructor(name) {
         this.name = name;
         this.health = 100;
         this.inventory = [];
     }
 }
 
-Character.prototype.roll = function(mod = 0) {
+Character.prototype.roll = function (mod = 0) {
     const result = Math.floor(Math.random() * 20) + 1 + mod;
     console.log(`${this.name} rolled a ${result}.`);
 };
@@ -68,7 +68,40 @@ robin.companion.companion.inventory = ["small hat", "sunglasses"];
 // Part 3: Class Features
 
 class Adventurer extends Character {
-    constructor (name, role) {
+    constructor(name, role, level, magic, magic_points, technique) {
         super(name);
+        this.role = role;
+        this.inventory.push("bedroll", "50 gold coins");
+        this.level = level;
+        this.magic = magic;
+        this.magic_points = magic_points;
+        this.technique = technique;
+    }
+    scout() {
+        console.log(`${this.name} is scouting ahead...`);
+        super.roll();
+    }
+}
+
+
+class Companion extends Character {
+    constructor(name, type, bond, stealth, stamina, personality, favoriteItem) {
+        super(name);
+        this.type = type;
+        this.bond = bond;
+        this.stealth = stealth;
+        this.stamina = stamina;
+        this.personality = personality;
+        this.favoriteItem = favoriteItem;
+    }
+
+    heal() {
+
+    }
+    tracking(target) {
+
+    }
+    warn() {
+
     }
 }
