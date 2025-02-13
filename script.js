@@ -49,6 +49,7 @@ class Character {
         this.health = 100;
         this.inventory = [];
     }
+    static MAX_HEALTH = 100;
 }
 
 Character.prototype.roll = function (mod = 0) {
@@ -57,26 +58,37 @@ Character.prototype.roll = function (mod = 0) {
 };
 
 // We can re-create Robin using the Character class
-const robin = new Character("Robin");
-robin.inventory = ["sword", "potion", "artifact"];
-robin.companion = new Character("Leo");
-robin.companion.type = "Cat";
-robin.companion.companion = new Character("Frank");
-robin.companion.companion.type = "Flea";
-robin.companion.companion.inventory = ["small hat", "sunglasses"];
+// const robin = new Character("Robin");
+// robin.inventory = ["sword", "potion", "artifact"];
+// robin.companion = new Character("Leo");
+// robin.companion.type = "Cat";
+// robin.companion.companion = new Character("Frank");
+// robin.companion.companion.type = "Flea";
+// robin.companion.companion.inventory = ["small hat", "sunglasses"];
 
 // Part 3: Class Features
 // Let’s begin by creating an Adventurer class. What attributes might be specific to an adventure, but that not all characters have?
 class Adventurer extends Character {
     constructor(name, role, level, magic, magic_points, technique) {
         super(name);
-        this.role = role;
         this.inventory.push("bedroll", "50 gold coins");
         this.level = level;
         this.magic = magic;
         this.magic_points = magic_points;
         this.technique = technique;
         this.equippedWeapon = null;
+
+        // Validate role
+        if (!Adventurer.ROLES.includes(role)) {
+            throw new Error(`Invalid role: ${role}. Choose from ${Adventurer.ROLES.join(", ")}`);
+        }
+        this.role = role;
+    }
+
+    static ROLES = ["Warrior", "Mage", "Rogue", "Cleric", "Necromancer", "Bard", "Monk"];
+
+    static isValidRole(role) {
+        return Adventurer.ROLES.includes(role);
     }
 
     // Attack function
@@ -126,7 +138,6 @@ class Adventurer extends Character {
     }
 }
 
-
 // Next, create a Companion class with properties and methods specific to the companions.
 class Companion extends Character {
     constructor(name, type, bond, stealth, stamina, personality, favoriteItem) {
@@ -155,3 +166,57 @@ class Companion extends Character {
         console.log(`${this.name} warns of danger!`);
     }
 }
+
+class Enemy extends Character {
+    constructor(name, type, level, strength, aggression, loot) {
+        super(name);
+        this.type = type;
+        this.level = level;
+        this.strength = strength;
+        this.aggression = aggression;
+        this.inventory = loot;
+    }
+
+    attack(target) {
+        if (!target || !target.name) {
+            console.log(`${this.name} tries to attack, but the target is invalid.`);
+            return;
+        }
+        const damage = this.strength + this.level * 2;
+        console.log(`${this.name} (a ${this.type}) attacks ${target.name} for ${damage} damage!`);
+        target.health -= damage;
+    }
+
+    intimidate(target) {
+        console.log(`${this.name} lets out a terrifying roar, scaring ${target.name}!`);
+    }
+
+    decideAction(target) {
+        const actionChance = Math.random() * 100; // Random number between 0-100
+        if (this.aggression > 70 || actionChance > 50) {
+            this.attack(target);
+        } else {
+            this.intimidate(target);
+        }
+    }
+}
+
+// Finally, change the declaration of Robin and the companions to use the new Adventurer and Companion classes.
+const robin = new Adventurer("Robin", "Warrior", 14, "fire", 75, "Power Slash");
+const leo = new Companion("Leo", "Cat", 95, 90, 100, "kind", "yarn ball");
+const frank = new Companion("Frank", "Flea", 78, 100, 55, "cranky", "sunglasses");
+
+const draco = new Enemy("Draco", "Dragon", 20, 98, 75, "gold coins");
+
+robin.attack(draco);
+leo.heal(robin);
+frank.warn(robin);
+
+// Part 4: Class Uniforms
+
+console.log(Adventurer.isValidRole("Mage"));
+console.log(Adventurer.isValidRole("Druid"));
+
+// Part 5: Gather your Party
+// Adventurer factory
+
