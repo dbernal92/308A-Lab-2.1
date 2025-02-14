@@ -73,8 +73,9 @@ class Adventurer extends Character {
         super(name);
         this.inventory.push("bedroll", "50 gold coins");
         this.level = level;
-        this.magic = magic;
-        this.magic_points = magic_points;
+        this.magic = ["Mage", "Cleric", "Necromancer"].includes(role) ? magic : "None";
+        this.magic_points = this.magic === "None" ? 0 : magic_points;
+
         this.technique = technique;
         this.equippedWeapon = null;
 
@@ -89,6 +90,11 @@ class Adventurer extends Character {
 
     static isValidRole(role) {
         return Adventurer.ROLES.includes(role);
+    }
+
+    // Adventurer rolls a dice
+    roll(mod = 0) {
+        return Math.floor(Math.random() * 20) + 1 + mod;
     }
 
     // Attack function
@@ -107,6 +113,12 @@ class Adventurer extends Character {
             console.log(`${this.name} is out of magic points.`);
         }
     }
+
+    resetHealth() {
+        this.health = Character.MAX_HEALTH;
+        console.log(`${this.name}'s health has been restored.`);
+    }
+
 
     // Use Item function
     useItem(item) {
@@ -129,6 +141,45 @@ class Adventurer extends Character {
         console.log(`${this.name} takes a rest and regains health and magic.`);
         this.health += 10;
         this.magic_points += 5;
+    }
+
+    duel(opponent) {
+        console.log("------------ Duel Start! -------------");
+        console.log(` ${this.name} (${this.role}) vs. ${opponent.name} (${opponent.role})!`);
+
+        while (this.health > 50 && opponent.health > 50) {
+            // Both adventurers roll
+            const roll1 = this.roll();
+            const roll2 = opponent.roll();
+
+            console.log(`${this.name} rolls a ${roll1}.`);
+            console.log(`${opponent.name} rolls a ${roll2}.`);
+
+            // Compare rolls and subtract 1 health from the loser
+            if (roll1 < roll2) {
+                this.health -= 1;
+                console.log(`${this.name} loses 1 health! (Health: ${this.health})`);
+            } else if (roll2 < roll1) {
+                opponent.health -= 1;
+                console.log(`${opponent.name} loses 1 health! (Health: ${opponent.health})`);
+            } else {
+                console.log("It's a tie! No health lost this round.");
+            }
+
+            console.log("--------------------------------------");
+
+            // Stop when one adventurer reaches 50 health
+            if (this.health <= 50 || opponent.health <= 50) {
+                break;
+            }
+        }
+
+        // Announce the winner
+        if (this.health > 50) {
+            console.log(`Brr brr! ${this.name} wins the duel!`);
+        } else {
+            console.log(`Oh no! ${opponent.name} wins the duel!`);
+        }
     }
 
     // Scout function
@@ -218,5 +269,93 @@ console.log(Adventurer.isValidRole("Mage"));
 console.log(Adventurer.isValidRole("Druid"));
 
 // Part 5: Gather your Party
-// Adventurer factory
+// Factory that creates different adventurers for the party
+class AdventurerFactory {
+    constructor(role) {
+        if (!Adventurer.ROLES.includes(role)) {
+            throw new Error(`Invalid role: ${role}. Choose from ${Adventurer.ROLES.join(", ")}`);
+        }
+        this.role = role;
+        this.adventurers = [];
+    }
 
+    // Generate a new adventurer with magic and techniques
+    generate(name) {
+        // Random levels
+        const levels = [10, 12, 15, 18, 20];
+        const magicTypes = {
+            Warrior: "None",
+            Mage: "Fire, Wind",
+            Rogue: "Wind, Earth",
+            Cleric: "Water, Earth",
+            Necromancer: "Dark",
+            Bard: "Wind, Fire",
+            Monk: "None"
+        };
+        const techniques = {
+            Warrior: "V-Slash",
+            Mage: "Zap! Whip",
+            Rogue: "Boomerang Cut",
+            Cleric: "Resurrect",
+            Necromancer: "Demon Ball",
+            Bard: "Sonic Boom",
+            Monk: "Dragon Cut"
+        };
+
+        const level = levels[Math.floor(Math.random() * levels.length)];
+        const magic = magicTypes[this.role];
+        const magicPoints = magic === "None" ? 0 : Math.floor(Math.random() * 50) + 10;
+        const technique = techniques[this.role];
+
+        const newAdventurer = new Adventurer(name, this.role, level, magic, magicPoints, technique);
+        this.adventurers.push(newAdventurer);
+        return newAdventurer;
+    }
+
+    // Find adventurer by index in array
+    // If index not available in array, null result
+    findByIndex(index) {
+        return this.adventurers[index] || null;
+    }
+
+    // Find adventurer by name
+    // If name not available in array, null result
+    findByName(name) {
+        return this.adventurers.find(a => a.name === name) || null;
+    }
+
+    // List all adventurers in the factory
+    listAdventurers() {
+        console.log(`Adventurers of role ${this.role}:`);
+        this.adventurers.forEach(a => {
+            console.log(`- ${a.name} (Level ${a.level}, Magic: ${a.magic}, Technique: ${a.technique})`);
+        });
+    }
+}
+
+// Examples
+const warriors = new AdventurerFactory("Warrior");
+const justin = warriors.generate("Justin");
+const gadwin = warriors.generate("Gadwin");
+
+const mages = new AdventurerFactory("Mage");
+const feena = mages.generate("Feena");
+
+const monks = new AdventurerFactory("Monk");
+const rapp = monks.generate("Rapp");
+
+console.log(justin);
+console.log(gadwin);
+console.log(feena);
+console.log(rapp);
+
+// List all adventurers created
+warriors.listAdventurers();
+mages.listAdventurers();
+monks.listAdventurers();
+
+// Part 6: Developing Skills
+// Added duel function to Adventurer class
+const mullen = warriors.generate("Colonel Mullen");
+
+justin.duel(mullen);
